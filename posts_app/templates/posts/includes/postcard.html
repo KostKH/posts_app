@@ -1,0 +1,14 @@
+<div class="card mb-4 shadow-sm">
+  <div class="card-header text-secondary">
+    {{ post.title}}
+  </div>
+  <div class="card-body">
+    <p class="card-text">{{ post.body|linebreaksbr }}</p>
+    <p class="card-text">Автор: {{ post.user.name }}</p>
+    {% if is_author %}
+      <a href="{% url 'post_delete' post.id %}">
+        Удалить
+      </a>
+    {% endif %}
+  </div>
+</div>

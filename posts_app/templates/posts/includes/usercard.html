@@ -1,0 +1,17 @@
+<div class="row g-0 border rounded overflow-hidden
+  flex-md-row mb-4 shadow-sm h-md-230 position-relative">
+
+  <div class="col p-4 d-flex flex-column position-static overflow-hidden">
+    <h4 class="mb-0">{{ user.name }}</h4>
+    <div class="mb-1 text-muted">{{ user.email }}</div>
+    <div class="row">
+      <div class="col-auto text-start">
+        <a
+          href="{% url 'user_post_view' user.id %}"
+          class="stretched-link">
+          Посмотреть посты...
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

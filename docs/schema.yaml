@@ -1,0 +1,278 @@
+openapi: 3.0.1
+info:
+  title: Документация для PostApp API
+  version: "1.0.0"
+
+paths:
+  /api/users/:
+    get:
+      tags:
+        - Пользователи
+      operationId: Список пользователей
+      description: ''
+      responses:
+        '200':
+          description: OK
+          content:
+            'application/json':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+                description: 'Список пользователей'
+
+  /api/users/{userId}/posts/:
+    get:
+      tags:
+        - Посты
+      operationId: Список постов пользователя {userId}
+      description: ''
+      parameters:
+        - name: userId
+          in: path
+          description: id пользователя
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            'application/json':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+                description: 'Список постов пользователя'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  
+  /auth/signin/:
+    post:
+      operationId: Регистрация пользователя
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: 'Пользователь успешно создан'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+      tags:
+        - Пользователи
+
+  /auth/login/:
+    post:
+      operationId: 'Вход: получение токена авторизации'
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserAuth'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthToken'
+          description: 'Вход прошел успешно'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+      tags:
+        - Пользователи
+  
+  /api/posts/:
+    post:
+      security:
+        - Token: []
+      operationId: 'Создание поста'
+      description: 'Доступно только авторизованному пользователю'
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostCreate'
+
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+          description: 'Пост успешно создан'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/AuthenticationError'
+      tags:
+        - Посты
+
+  /api/posts/{postId}/:
+    delete:
+      security:
+        - Token: []
+      tags:
+        - Посты
+      operationId: Удаление поста {postId}
+      description: 'Доступно только авторизованному пользователю, создавшему пост'
+      parameters:
+        - name: postId
+          in: path
+          description: id поста
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Пост удален успешно
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/AuthenticationError'
+        '403':
+          $ref: '#/components/responses/ForbiddenAction'
+
+
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        name:
+          type: string
+
+    UserCreate:
+      type: object
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+        password:
+          type: string
+
+    UserAuth:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+
+    AuthToken:
+      type: object
+      properties:
+        token:
+          type: string
+
+    Post:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        body:
+          type: string
+        user:
+          type: integer
+
+    PostCreate:
+      type: object
+      properties:
+        title:
+          type: string
+        body:
+          type: string
+
+    NotFound:
+      description: Объект не найден
+      type: object
+      properties:
+        detail:
+          description: 'Описание ошибки'
+          example: "Страница не найдена"
+          type: string
+
+    BadRequest:
+      description: BAD_REQUEST
+      type: object
+      properties:
+        field_name1:
+          description: 'Описание ошибок'
+          example: [Ошибка1, Ошибка2]
+          type: array
+        field_name2:
+          description: 'Описание ошибок'
+          example: [Ошибка1, Ошибка2]
+          type: array
+
+    AuthenticationError:
+      description: Пользователь не авторизован
+      type: object
+      properties:
+        detail:
+          description: 'Описание ошибки'
+          example: "Учетные данные не были предоставлены."
+          type: string
+
+    ForbiddenAction:
+      description: Операция запрещена
+      type: object
+      properties:
+        detail:
+          description: 'Описание ошибки'
+          example: "Изменение чужого контента запрещено!"
+          type: string
+
+  responses:
+    NotFound:
+      description: Объект не найден
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/NotFound'
+
+    BadRequest:
+      description: Ошибка в теле запроса
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BadRequest'
+
+    AuthenticationError:
+      description: Пользователь не авторизован
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AuthenticationError'
+
+    ForbiddenAction:
+      description: Операция запрещена
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ForbiddenAction'
+
+  securitySchemes:
+    Token:
+      description: 'Авторизация по токену. <br>
+      Все запросы от имени пользователя должны выполняться с заголовком "Authorization: token TOKENVALUE"'
+      type: http
+      scheme: token
