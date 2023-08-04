@@ -1,0 +1,35 @@
+version: '3.3'
+
+services:
+
+  app:
+    image: kostkh/posts_app:v1.0.0
+    restart: always
+    expose:
+      - 8000
+    networks:
+      - postapp_network
+    volumes:
+      - app_db:/app/app_db/
+      - static:/app/static/
+    env_file:
+      - ./.env
+
+  nginx:
+    image: nginx:1.25.0
+    networks:
+      - postapp_network
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ../docs/:/usr/share/nginx/html/docs/
+      - static:/var/html/static/
+    depends_on:
+      - app
+volumes:
+  app_db:
+  static:
+
+networks:
+  postapp_network:
